@@ -7,21 +7,25 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @Entity
 @Table(name = "patient")
 public class Patient {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "예약번호")
     private Long id;
 
+    @Column(name = "이름")
     private String name;
 
+    @Column(name = "성별")
     private String gender;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "생년월일")
     private LocalDate birthDate;
 
+    @Column(name = "연락처")
     private String contact;
 
-    // Getters and Setters
+
     public Long getId() {
         return id;
     }

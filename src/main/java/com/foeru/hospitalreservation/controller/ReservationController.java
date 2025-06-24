@@ -4,8 +4,8 @@ import com.foeru.hospitalreservation.entity.Patient;
 import com.foeru.hospitalreservation.repository.PatientRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import com.foeru.hospitalreservation.dto.ResponseMessage;
 
 @RestController
 @RequestMapping("/api/patient")
@@ -33,9 +33,16 @@ public class ReservationController {
 
     // 3. 환자 추가 API
     @PostMapping
-    public Patient addPatient(@RequestBody Patient patient) {
-        return patientRepository.save(patient);
+    public ResponseEntity<ResponseMessage> addPatient(@RequestBody Patient patient) {
+        Patient savedPatient = patientRepository.save(patient); // 저장된 엔티티
+        ResponseMessage response = new ResponseMessage(
+            "예약이 완료되었습니다!", // 메시지 추가
+            savedPatient // 저장된 환자 데이터
+        );
+        return ResponseEntity.ok(response); // JSON 응답으로 반환
     }
+
+    // 4. 환자 수정 API
     @PutMapping("/{id}")
     public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient newPatientData) {
         return patientRepository.findById(id)
@@ -51,13 +58,16 @@ public class ReservationController {
             })
             .orElse(ResponseEntity.notFound().build()); // id를 찾지 못하면 404 반환
     }
-   @DeleteMapping("/{id}")
-   public ResponseEntity<Object> deletePatient(@PathVariable Long id) {
-       return patientRepository.findById(id)
-           .map(patient -> {
-               patientRepository.delete(patient);
-               return ResponseEntity.<Void>noContent().build(); // 명시적으로 제네릭 타입 지정
-           })
-           .orElse(ResponseEntity.notFound().build());
-   }
+
+    // 5. 환자 삭제 API
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> deletePatient(@PathVariable Long id) {
+        return patientRepository.findById(id)
+            .map(patient -> {
+                patientRepository.delete(patient);
+                return ResponseEntity.<Void>noContent().build(); // 명시적으로 제네릭 타입 지정
+            })
+            .orElse(ResponseEntity.notFound().build());
+
+    }
 }

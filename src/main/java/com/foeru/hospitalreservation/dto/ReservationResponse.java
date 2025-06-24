@@ -19,7 +19,6 @@ public class ReservationResponse {
         this.id = id;
         this.status = status;
         this.message = message;
-        this.patient = null; // 환자 정보가 null로 설정됩니다.
     }
 
     // Getter와 Setter

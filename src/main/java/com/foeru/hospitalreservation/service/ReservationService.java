@@ -30,7 +30,8 @@ public class ReservationService {
     public ReservationResponse getReservationResponseById(Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다. ID: " + id));
-        
+
+
         // Reservation -> ReservationResponse로 변환
         return new ReservationResponse(
                 reservation.getId(),
