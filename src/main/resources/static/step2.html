@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>병원 예약 시스템 - Step 2</title>
+</head>
+<body>
+    <h1>병원 예약 시스템</h1>
+    <h2>환자 정보를 입력하세요</h2>
+
+    <form id="step2-form">
+        <p id="reservation-summary"></p>
+
+        <label for="patient-id">Patient ID:</label>
+        <input type="text" id="patient-id" name="patientId" required><br><br>
+
+        <label for="patient-name">이름:</label>
+        <input type="text" id="patient-name" name="patientName" required><br><br>
+
+        <label for="patient-contact">연락처:</label>
+        <input type="tel" id="patient-contact" name="patientContact" required><br><br>
+
+        <button type="submit">예약 완료</button>
+    </form>
+
+    <script>
+        // URL로 전달된 Query Parameters 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const hospitalId = urlParams.get("hospitalId");
+        const reservationDate = urlParams.get("reservationDate");
+        const selectedTime = urlParams.get("selectedTime");
+
+        // 예약 정보 요약 표시
+        document.addEventListener("DOMContentLoaded", () => {
+            const summary = `병원 ID: ${hospitalId}, 예약 날짜: ${reservationDate}, 예약 시간: ${selectedTime}`;
+            document.getElementById("reservation-summary").textContent = summary;
+        });
+
+        // 예약 데이터 제출
+        document.getElementById("step2-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const patientId = document.getElementById("patient-id").value;
+            const patientName = document.getElementById("patient-name").value;
+            const patientContact = document.getElementById("patient-contact").value;
+
+            const reservationData = {
+                hospitalId,
+                reservationDate,
+                reservationTime: `${reservationDate}T${selectedTime}:00`,
+                patientId,
+                patientName,
+                patientContact
+            };
+
+            try {
+                const response = await fetch("/api/reservations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(reservationData)
+                });
+
+                if (response.ok) {
+                    alert("예약이 완료되었습니다!");
+                    window.location.href = "/"; // 메인 페이지로 이동
+                } else {
+                    const errorData = await response.json();
+                    alert(`예약 실패: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error("Error submitting reservation:", error);
+                alert("예약 실패: 서버 오류");
+            }
+        });
+    </script>
+</body>
+</html>

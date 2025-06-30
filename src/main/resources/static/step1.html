@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>병원 예약 시스템 - Step 1</title>
+    <style>
+        .disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .selected {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>병원 예약 시스템</h1>
+    <h2>병원 ID와 예약 정보를 입력하세요</h2>
+
+    <form id="step1-form">
+        <label for="hospital-id">Hospital ID:</label>
+        <input type="text" id="hospital-id" name="hospitalId" required><br><br>
+
+        <label for="reservation-date">예약 날짜:</label>
+        <input type="date" id="reservation-date" name="reservationDate" required><br><br>
+
+        <div id="time-buttons">
+            <h3>예약 가능한 시간</h3>
+            <!-- JavaScript로 버튼 생성 -->
+        </div>
+
+        <button type="button" id="proceed-button" disabled>다음 단계로</button>
+    </form>
+
+    <script>
+        // 오늘 날짜를 YYYY-MM-DD 형식으로 반환
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('reservation-date');
+            dateInput.min = getTodayDate(); // 오늘 이후로만 날짜 선택 가능
+        });
+
+        const API_URL = "/api/reservations";
+
+        async function createTimeButtons(date, hospitalId) {
+            const timeButtonsContainer = document.getElementById('time-buttons');
+            timeButtonsContainer.innerHTML = ""; // 기존 버튼 초기화
+            const availableTimes = [
+                "09:00", "10:00", "11:00", "12:00", "13:00",
+                "14:00", "15:00", "16:00", "17:00"
+            ];
+
+            try {
+                const response = await fetch(`${API_URL}?date=${date}&hospitalId=${hospitalId}`);
+                const reservedTimes = await response.json();
+
+                availableTimes.forEach(time => {
+                    const button = document.createElement("button");
+                    button.textContent = time;
+                    button.value = time;
+
+                    if (reservedTimes.includes(time)) {
+                        button.disabled = true;
+                        button.classList.add("disabled");
+                    }
+
+                    button.addEventListener("click", () => {
+                        document.querySelectorAll("#time-buttons button").forEach(btn => btn.classList.remove("selected"));
+                        button.classList.add("selected");
+                        document.getElementById("proceed-button").disabled = false; // 다음 버튼 활성화
+                    });
+
+                    timeButtonsContainer.appendChild(button);
+                });
+            } catch (error) {
+                console.error("Error loading time buttons:", error);
+            }
+        }
+
+        // 병원 ID와 날짜 선택 시 시간 버튼 업데이트
+        const hospitalIdInput = document.getElementById('hospital-id');
+        const dateInput = document.getElementById('reservation-date');
+        hospitalIdInput.addEventListener("input", updateTimeButtons);
+        dateInput.addEventListener("change", updateTimeButtons);
+
+        async function updateTimeButtons() {
+            const hospitalId = hospitalIdInput.value;
+            const date = dateInput.value;
+
+            if (hospitalId && date) {
+                await createTimeButtons(date, hospitalId);
+            }
+        }
+
+        // 다음 단계로 이동
+        document.getElementById("proceed-button").addEventListener("click", () => {
+            const selectedTime = document.querySelector("#time-buttons button.selected")?.value;
+            const hospitalId = hospitalIdInput.value;
+            const reservationDate = dateInput.value;
+
+            if (hospitalId && reservationDate && selectedTime) {
+                const queryParams = new URLSearchParams({
+                    hospitalId, reservationDate, selectedTime
+                }).toString();
+                window.location.href = `/step2.html?${queryParams}`; // Step 2로 이동
+            }
+        });
+    </script>
+</body>
+</html>

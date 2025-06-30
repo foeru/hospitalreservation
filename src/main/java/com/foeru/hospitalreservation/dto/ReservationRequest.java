@@ -14,7 +14,6 @@ public class ReservationRequest {
     @Future(message = "Reservation Time은 미래 시점이어야 합니다.")
     private LocalDateTime reservationTime;
 
-    // Getters 추가
     public Long getPatientId() {
         return patientId;
     }

@@ -7,7 +7,6 @@ public class PatientInfo {
     private String birthDate;
     private String contact;
 
-    // 생성자
     public PatientInfo(Long id, String name, String gender, String birthDate, String contact) {
         this.id = id;
         this.name = name;
@@ -16,7 +15,6 @@ public class PatientInfo {
         this.contact = contact;
     }
 
-    // Getter와 Setter 추가
     public Long getId() {
         return id;
     }

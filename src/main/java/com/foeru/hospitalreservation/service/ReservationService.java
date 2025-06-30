@@ -1,11 +1,14 @@
 package com.foeru.hospitalreservation.service;
 
-import com.foeru.hospitalreservation.dto.ReservationResponse;
 import com.foeru.hospitalreservation.entity.Reservation;
 import com.foeru.hospitalreservation.repository.ReservationRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -16,27 +19,21 @@ public class ReservationService {
         this.reservationRepository = reservationRepository;
     }
 
-    // 1. 모든 예약 조회
-    public Page<Reservation> getReservations(Pageable pageable) {
-        return reservationRepository.findAll(pageable);
-    }
+    // 특정 병원의 특정 날짜에 예약된 시간 가져오기
+    public List<String> getReservedTimes(Long hospitalId, String date) {
+        LocalDate localDate = LocalDate.parse(date);
+        
+        // 해당 날짜의 시작과 끝 시간 계산
+        LocalDateTime startOfDay = localDate.atStartOfDay();
+        LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
 
-    // 2. 예약 저장
-    public Reservation saveReservation(Reservation reservation) {
-        return reservationRepository.save(reservation);
-    }
+        // 예약된 시간 조회
+        List<Reservation> reservations = reservationRepository
+                .findAllByHospitalIdAndReservationTimeBetween(hospitalId, startOfDay, endOfDay);
 
-    // 3. 특정 예약 ID로 ReservationResponse 반환
-    public ReservationResponse getReservationResponseById(Long id) {
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다. ID: " + id));
-
-
-        // Reservation -> ReservationResponse로 변환
-        return new ReservationResponse(
-                reservation.getId(),
-                "success",
-                "예약 조회 성공"
-        );
+        // 예약된 시간대를 문자열 형식 목록으로 반환
+        return reservations.stream()
+                .map(reservation -> reservation.getReservationTime().toLocalTime().toString())
+                .collect(Collectors.toList());
     }
 }
